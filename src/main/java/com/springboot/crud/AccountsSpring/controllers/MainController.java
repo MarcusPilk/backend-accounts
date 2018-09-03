@@ -3,31 +3,26 @@ package com.springboot.crud.AccountsSpring.controllers;
 import com.springboot.crud.AccountsSpring.models.AppAccounts;
 import com.springboot.crud.AccountsSpring.models.AppAccountsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
+import java.util.List;
 
-@Controller
+
+@RestController
+@CrossOrigin(origins = "http://localhost:8080")
+@RequestMapping("/")
 public class MainController {
 
     @Autowired
     AppAccountsRepo appRepo;
 
-    @RequestMapping("/")
-    public ModelAndView doHome(){
-        ModelAndView mv = new ModelAndView("index");
-        mv.addObject("lists",appRepo.findAll());
-        return mv;
+    @RequestMapping("/all")
+    public List<AppAccounts> findAll(){
+        return (List<AppAccounts>) appRepo.findAll();
     }
 
     @RequestMapping(value = "/save",method = RequestMethod.POST)
-    public ModelAndView doSave(@RequestParam("id") String id, @RequestParam("firstname") String firstName, @RequestParam("lastname") String lastName, @RequestParam("accountnumber") int accountNumber){
-        ModelAndView mv = new ModelAndView("redirect:/");
+    public String doSave(@RequestParam("id") String id, @RequestParam("firstname") String firstName, @RequestParam("lastname") String lastName, @RequestParam("accountnumber") int accountNumber){
         AppAccounts account;
         if(!id.isEmpty()){
             account = appRepo.findById(Integer.parseInt(id)).get();
@@ -38,27 +33,22 @@ public class MainController {
         account.setLast_name(lastName);
         account.setAccount_number(accountNumber);
         appRepo.save(account);
-        mv.addObject("lists",appRepo.findAll());
-        return mv;
+
+        return "{\"message\":\"Account created successfully!!\"}";
     }
 
     @RequestMapping(value = "/view/{id}",method = RequestMethod.GET)
-    public ModelAndView doView(@PathVariable("id") int id){
-        ModelAndView mv = new ModelAndView("view");
-        mv.addObject("account", appRepo.findById(id).get());
-        return mv;
+    public AppAccounts findOne(@PathVariable("id") int id){
+        return appRepo.findById(id).get();
     }
     @RequestMapping(value = "/delete/{id}",method = RequestMethod.GET)
-    public ModelAndView doDelete(@PathVariable("id") int id){
-        ModelAndView mv = new ModelAndView("redirect:/");
+    public List<AppAccounts> doDelete(@PathVariable("id") int id){
         appRepo.deleteById(id);
-        return mv;
+        return findAll();
     }
 
     @RequestMapping(value = "/edit/{id}",method = RequestMethod.GET)
-    public ModelAndView doEdit(@PathVariable("id") int id){
-        ModelAndView mv = new ModelAndView("edit");
-        mv.addObject("account", appRepo.findById(id).get());
-        return mv;
+    public AppAccounts doEdit(@PathVariable("id") int id){
+        return findOne(id);
     }
 }
